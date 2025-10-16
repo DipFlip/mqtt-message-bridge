@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# /// script
+# dependencies = ["paho-mqtt"]
+# ///
 """
 Reader script that subscribes to messages from the publisher.
 This can be run from anywhere with internet access to receive messages.

@@ -36,12 +36,12 @@ Works anywhere in the world with internet connection. Uses MQTT public broker.
 
 **Publisher:**
 ```bash
-uv run --no-project publisher.py
+uv run publisher.py
 ```
 
 **Reader (can be anywhere with internet):**
 ```bash
-uv run --no-project reader.py
+uv run reader.py
 ```
 
 ### Installation

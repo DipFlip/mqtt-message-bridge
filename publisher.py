@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# /// script
+# dependencies = ["paho-mqtt"]
+# ///
 """
 Publisher script that sends messages with location and timestamp to an MQTT broker.
 Messages can be received by anyone running the reader.py script.
