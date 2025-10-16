@@ -1,88 +1,100 @@
-# MQTT Message Publisher/Reader
+# Message Publisher/Reader
 
-A simple Python MQTT publisher and reader system for sending messages over the internet. The publisher sends location-based timestamped messages that can be received by anyone running the reader script from anywhere in the world.
+Simple Python scripts for sending messages between machines. Choose between:
+- **Internet mode** (MQTT) - Works across different networks worldwide
+- **Local network mode** (UDP) - Works on same WiFi/LAN without internet
 
 ## Features
 
-- Real-time message publishing over MQTT
-- Internet-accessible (works across different networks)
-- Simple to use - just two Python scripts
+- Real-time message publishing
+- Two modes: Internet (MQTT) or Local Network (UDP)
+- Simple to use - just Python scripts
 - No setup required with `uv`
-- Uses public MQTT broker (no authentication needed)
+- Shows sender's location and timestamp
 
 ## Quick Start
 
-### With uv (recommended)
+### Mode 1: Local Network (No Internet Required)
 
-Install uv if you don't have it:
+Perfect for machines on the same WiFi/LAN. Uses UDP broadcast - no IP address needed!
+
+**Publisher:**
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
+uv run --no-project local_publisher.py
 ```
 
-Run the publisher:
+**Reader (on another machine on same network):**
+```bash
+uv run --no-project local_reader.py
+```
+
+The publisher broadcasts to the local network and the reader automatically receives messages.
+
+### Mode 2: Internet (Across Different Networks)
+
+Works anywhere in the world with internet connection. Uses MQTT public broker.
+
+**Publisher:**
 ```bash
 uv run --no-project publisher.py
 ```
 
-Run the reader (can be on any machine with internet):
+**Reader (can be anywhere with internet):**
 ```bash
 uv run --no-project reader.py
 ```
 
-`uv` will automatically install the required `paho-mqtt` dependency.
+### Installation
 
-### With traditional Python
-
-Install dependencies:
+If you don't have `uv`:
 ```bash
-pip install paho-mqtt
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Run the publisher:
-```bash
-python3 publisher.py
-```
+`uv` automatically installs dependencies (paho-mqtt for internet mode, none needed for local mode).
 
-Run the reader:
+Alternatively with pip:
 ```bash
-python3 reader.py
+pip install paho-mqtt  # Only needed for internet mode
+python3 local_publisher.py  # or publisher.py
 ```
 
 ## How It Works
 
-The system uses MQTT (Message Queue Telemetry Transport) protocol with a public broker (`broker.hivemq.com`):
+### Local Network Mode
+- **local_publisher.py** - Broadcasts UDP messages on port 5005 to local network
+- **local_reader.py** - Listens for UDP broadcasts on the same network
+- No internet required, no IP address configuration needed
+- Works on same WiFi/LAN
 
-1. **Publisher** - Connects to the MQTT broker and publishes messages every 5 seconds
-   - Message format: `hello from Berkeley, time is YYYY-MM-DD HH:MM:SS`
-
-2. **Reader** - Connects to the same MQTT broker and subscribes to receive all published messages
-   - Displays messages in real-time as they arrive
-
-Both scripts can run on different machines anywhere in the world as long as they have internet access.
+### Internet Mode
+- **publisher.py** - Connects to public MQTT broker (`broker.hivemq.com`)
+- **reader.py** - Connects to same broker and receives messages
+- Works across different networks worldwide
+- Requires internet connection
 
 ## Requirements
 
 - Python 3.7+
-- `paho-mqtt` library (automatically installed by `uv`)
+- **Local mode:** No dependencies
+- **Internet mode:** `paho-mqtt` library (automatically installed by `uv`)
 
 ## Stopping the Scripts
 
-Press `Ctrl+C` to stop either script gracefully.
-
-Or kill background processes:
-```bash
-pkill -f publisher.py
-pkill -f reader.py
-```
+Press `Ctrl+C` to stop any script gracefully.
 
 ## Configuration
 
-You can customize the following in the scripts:
+**Local Network Scripts:**
+- `BROADCAST_PORT` - UDP port (default: 5005)
+- `LOCATION` - Location name
+- `BROADCAST_INTERVAL` - Seconds between messages (default: 5)
 
+**Internet Scripts:**
 - `LOCATION` - Change the location name in `publisher.py`
-- `BROKER` - Use a different MQTT broker
+- `BROKER` - Use a different MQTT broker (default: broker.hivemq.com)
 - `TOPIC` - Change the MQTT topic for different channels
-- Publishing interval - Modify the `time.sleep(5)` value in `publisher.py`
+- Publishing interval - Modify `time.sleep(5)` in `publisher.py`
 
 ## License
 
