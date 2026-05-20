@@ -16,7 +16,8 @@ Simple Python scripts for sending messages between machines. Choose between:
 
 ### Mode 1: Local Network (No Internet Required)
 
-Perfect for machines on the same WiFi/LAN. Uses UDP broadcast - no IP address needed!
+Perfect for machines on the same WiFi/LAN, or for two routed local subnets.
+Uses UDP on port 5005. It can broadcast on one LAN or send directly to a target IP.
 
 **Publisher:**
 ```bash
@@ -29,6 +30,11 @@ uv run --no-project local_reader.py
 ```
 
 The publisher broadcasts to the local network and the reader automatically receives messages.
+
+**Direct coordinate send:**
+```bash
+uv run --no-project local_publisher.py --target 10.0.0.136 --lat 37.8715 --lon -122.2730 --once
+```
 
 ### Mode 2: Internet (Across Different Networks)
 
@@ -62,10 +68,34 @@ python3 local_publisher.py  # or publisher.py
 ## How It Works
 
 ### Local Network Mode
-- **local_publisher.py** - Broadcasts UDP messages on port 5005 to local network
-- **local_reader.py** - Listens for UDP broadcasts on the same network
-- No internet required, no IP address configuration needed
-- Works on same WiFi/LAN
+- **local_publisher.py** - Sends UDP messages on port 5005 using broadcast or direct unicast
+- **local_reader.py** - Listens for UDP messages on port 5005
+- No internet required
+- Broadcast works on one LAN; routed subnets should use `--target <receiver-ip>`
+
+### Local setup: nglamp to Spot Dog
+
+Goal:
+- Sender: `nglamp` Ubuntu machine at `10.0.0.127`
+- Receiver: Spot Dog Mac at `10.0.0.136`
+- Both machines are on the same `10.0.0.0/24` local network
+
+On the Spot Dog Mac, run the reader:
+```bash
+python3 local_reader.py --bind 0.0.0.0 --port 5005
+```
+
+Then send a coordinate from `nglamp` to the Spot Dog Mac:
+```bash
+python3 local_publisher.py --lat 37.8715 --lon -122.2730 --once
+```
+
+For repeated sends, omit `--once` and optionally set `--interval`:
+```bash
+python3 local_publisher.py --lat 37.8715 --lon -122.2730 --interval 5
+```
+
+The publisher defaults to `--target 10.0.0.136`, so no route changes or temporary Mac router are needed for this same-subnet setup. Use `--target <ip>` only if Spot Dog gets a different address.
 
 ### Internet Mode
 - **publisher.py** - Connects to public MQTT broker (`broker.hivemq.com`)
@@ -86,9 +116,12 @@ Press `Ctrl+C` to stop any script gracefully.
 ## Configuration
 
 **Local Network Scripts:**
-- `BROADCAST_PORT` - UDP port (default: 5005)
-- `LOCATION` - Location name
-- `BROADCAST_INTERVAL` - Seconds between messages (default: 5)
+- `LOCAL_MESSAGE_PORT` - UDP port (default: 5005)
+- `LOCAL_MESSAGE_SOURCE` - Source name (default: `nglamp`)
+- `LOCAL_MESSAGE_TARGET` - Target IP or `<broadcast>` (default: `10.0.0.136`)
+- `LOCAL_MESSAGE_LAT` - Latitude
+- `LOCAL_MESSAGE_LON` - Longitude
+- `LOCAL_MESSAGE_INTERVAL` - Seconds between messages (default: 5)
 
 **Internet Scripts:**
 - `LOCATION` - Change the location name in `publisher.py`
